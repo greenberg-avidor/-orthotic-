@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אבידור — מערכת המלצה למדרסים</title>
+<style>
+  :root {
+    --primary:       #1a3a5c;
+    --primary-dark:  #0f2540;
+    --primary-light: #e8f0f8;
+    --accent:        #2a9d8f;
+    --accent-dark:   #21867a;
+    --accent-light:  #e0f5f3;
+    --orange:        #e07c24;
+    --orange-dark:   #c46a18;
+    --orange-light:  #fff4e8;
+    --bg:            #eef0f4;
+    --card:          #ffffff;
+    --border:        #d8dfe8;
+    --text:          #1e2d3d;
+    --text-muted:    #6b7a8d;
+    --radius:        8px;
+    --shadow:        0 1px 4px rgba(0,0,0,.08), 0 3px 10px rgba(0,0,0,.06);
+    --shadow-lg:     0 4px 24px rgba(0,0,0,.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 14px;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+
+  /* ── Header ── */
+  .header {
+    background: var(--primary);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-lg);
+    border-bottom: 3px solid var(--accent);
+    overflow: hidden;
+  }
+  .header-top {
+    padding: 11px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .header-logo {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.5px;
+    flex-shrink: 0;
+  }
+  .header-logo span { color: var(--accent); }
+  .header-tagline {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.45);
+    margin-right: auto;
+  }
+  .header-body {
+    padding: 7px 24px 10px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .header-body h1 { font-size: 0.95rem; font-weight: 600; color: white; margin-bottom: 1px; }
+  .header-body p  { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+
+  /* ── Progress ── */
+  .progress-wrap {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 9px 18px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .progress-bar {
+    height: 6px;
+    background: #dde3ea;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--orange), #f5b97a);
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+  .steps-dots { display: none; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    box-shadow: var(--shadow);
+    margin-bottom: 10px;
+  }
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 3px;
+  }
+  .card-subtitle {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+
+  /* ── Multi-question sections ── */
+  .q-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 2px;
+  }
+  .q-section-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .q-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 14px 0;
+  }
+
+  /* ── Inline numeric group (גיל + משקל + מידה) ── */
+  .num-inline-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .num-inline-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .num-inline-item .num-field {
+    width: 100%;
+    max-width: 130px;
+    font-size: 1.5rem;
+    padding: 10px 8px;
+  }
+  .num-inline-item .num-unit { font-size: 0.85rem; margin-top: 4px; }
+  .num-inline-item .num-category { margin-top: 6px; min-height: 30px; }
+
+  /* ── Options grid ── */
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 10px;
+  }
+  .option-btn {
+    padding: 10px 12px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-align: center;
+    color: var(--text);
+    transition: all 0.12s;
+    user-select: none;
+    font-family: inherit;
+    font-weight: 500;
+  }
+  .option-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    color: var(--accent-dark);
+  }
+  .option-btn.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 700;
+  }
+  .option-btn.single.selected {
+    border-color: var(--orange-dark);
+    background: var(--orange);
+    color: white;
+    font-weight: 700;
+  }
+
+  /* ── Navigation ── */
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .btn {
+    padding: 10px 26px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-primary  { background: var(--orange); color: white; }
+  .btn-primary:hover { background: var(--orange-dark); }
+  .btn-secondary {
+    background: white;
+    color: var(--text-muted);
+    border: 2px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-success  { background: var(--orange); color: white; padding: 13px 32px; font-size: 1rem; }
+  .btn-success:hover { background: var(--orange-dark); }
+  .skip-text {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    font-family: inherit;
+  }
+  .skip-text:hover { color: var(--primary); }
+
+  /* ── Results ── */
+  #results { display: none; }
+  .result-header {
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius);
+    padding: 18px 28px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-lg);
+    border-bottom: 3px solid var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .result-header h2 { font-size: 1.15rem; font-weight: 700; }
+  .result-header p  { font-size: 0.78rem; opacity: 0.6; margin-top: 2px; }
+
+  /* ── Rec grid ── */
+  .rec-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .rec-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+
+  .recommendation-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    box-shadow: var(--shadow);
+    border-right: 6px solid transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .recommendation-card.rank-1 {
+    border-right-color: var(--orange);
+    background: linear-gradient(150deg, #fff8ef, #fff0d8);
+    box-shadow: 0 4px 18px rgba(224,124,36,.18);
+    outline: 2px solid #f5c98a;
+  }
+  .recommendation-card.rank-2 {
+    border-right-color: var(--primary);
+    background: linear-gradient(150deg, #f2f7fd, #e4eef8);
+    outline: 1.5px solid #b8d0ea;
+  }
+
+  .rec-cat {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+  .rank-1 .rec-cat { color: var(--orange-dark); opacity: 0.75; }
+  .rank-2 .rec-cat { color: var(--primary); opacity: 0.7; }
+
+  .rec-name { font-weight: 800; letter-spacing: -0.3px; line-height: 1.1; }
+  .rank-1 .rec-name { font-size: 2rem; color: var(--orange-dark); }
+  .rank-2 .rec-name { font-size: 1.45rem; color: var(--primary); }
+
+  .rec-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    width: fit-content;
+  }
+  .badge-gold   { background: var(--orange-light); color: var(--orange-dark); border: 1px solid #f5c98a; }
+  .badge-silver { background: var(--primary-light); color: var(--primary); border: 1px solid #aac4e0; }
+  .badge-bronze { background: #f0f1f3; color: #555; }
+
+  .override-alert {
+    background: #fffbeb;
+    border: 1.5px solid #fcd34d;
+    border-radius: var(--radius);
+    padding: 11px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .override-alert .icon { font-size: 1rem; }
+  .override-alert .text { font-size: 0.83rem; color: #78350f; }
+  .override-alert .text strong { font-size: 0.88rem; }
+
+  .restart-btn { text-align: center; margin-top: 22px; }
+
+  /* ── Sales explanation ── */
+  .sales-explanation {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+  .exp-line {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ── Section divider ── */
+  .section-divider {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    padding-right: 12px;
+    border-right: 4px solid var(--orange);
+  }
+
+  /* ── Qroom card ── */
+  .qroom-card { border-right-color: #4a5db0 !important; background: linear-gradient(150deg, #f8f9ff, #eeeffe); }
+  .qroom-name { color: #3d4db7 !important; }
+  .qroom-badge { background: #e8eaf6; color: #3d4db7; }
+  .qroom-link {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 7px 18px;
+    background: #3d4db7;
+    color: white;
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .qroom-link:hover { background: #2c3d9e; }
+
+  /* ── Other free-text ── */
+  .other-wrap { display: contents; }
+  .other-input-wrap {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    animation: popIn 0.15s ease;
+  }
+  .other-text-field {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid var(--accent);
+    border-radius: var(--radius);
+    font-size: 0.92rem;
+    font-family: inherit;
+    color: var(--text);
+  }
+  .other-text-field:focus { outline: none; box-shadow: 0 0 0 3px rgba(42,157,143,.15); }
+  .other-clear-btn {
+    padding: 8px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: white;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .other-clear-btn:hover { border-color: #c0392b; color: #c0392b; }
+
+  /* ── Numeric input ── */
+  .num-input-wrap { padding: 6px 0; }
+  .num-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .num-field {
+    width: 160px;
+    padding: 14px 18px;
+    font-size: 1.9rem;
+    font-weight: 700;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    text-align: center;
+    font-family: inherit;
+    color: var(--text);
+    transition: border-color 0.15s;
+    direction: ltr;
+  }
+  .num-field:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px rgba(224,124,36,.15); }
+  .num-unit { font-size: 1.05rem; color: var(--text-muted); font-weight: 500; }
+  .num-category { min-height: 38px; }
+  .cat-badge {
+    display: inline-block;
+    background: var(--orange);
+    color: white;
+    padding: 7px 22px;
+    border-radius: 99px;
+    font-size: 1rem;
+    font-weight: 700;
+    animation: popIn 0.2s ease;
+  }
+  .cat-hint { color: var(--text-muted); font-size: 0.9rem; }
+
+  @keyframes popIn {
+    from { transform: scale(0.88); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
+
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.93rem;
+  }
+  .summary-table th, .summary-table td {
+    padding: 9px 14px;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-table th {
+    background: #f4f6f9;
+    font-weight: 600;
+    color: var(--text-muted);
+    width: 35%;
+  }
+
+  @media (max-width: 600px) {
+    .options-grid { grid-template-columns: repeat(2, 1fr); }
+    .header-top { padding: 12px 18px; }
+    .header-logo { font-size: 1.1rem; }
+    .card { padding: 18px 20px; }
+    .rec-name { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="header-logo">אבידור<span>.</span>מדרסים</div>
+      <div class="header-tagline">Avidor Health Care</div>
+    </div>
+    <div class="header-body">
+      <h1>מערכת המלצה למדרסים</h1>
+      <p>מלא את פרטי המטופל לקבלת המלצה מותאמת אישית</p>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="step-label">שלב 1 מתוך 10</span>
+      <span id="step-pct">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="steps-dots" id="steps-dots"></div>
+  </div>
+
+  <!-- Form -->
+  <div id="form-section">
+    <div class="card" id="question-card"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" id="btn-back" onclick="goBack()">→ חזור</button>
+      <button class="skip-text" onclick="skipStep()">דלג על שלב זה</button>
+      <button class="btn btn-primary" id="btn-next" onclick="goNext()">הבא ←</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+    <div class="result-header">
+      <div>
+        <h2>תוצאות ההמלצה</h2>
+        <p>על בסיס הנתונים שהוזנו, להלן המדרסים המומלצים</p>
+      </div>
+    </div>
+    <div id="override-alerts"></div>
+    <div id="rec-list"></div>
+    <div class="card">
+      <div class="card-title">סיכום נתוני המטופל</div>
+      <table class="summary-table" id="summary-table"></table>
+    </div>
+    <div class="restart-btn">
+      <button class="btn btn-primary" onclick="restart()">מטופל חדש</button>
+    </div>
+  </div>
+
+</div>
+<script>
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
+// ── Numeric mapping functions ──────────────────
+function mapAge(n) {
+  if (n <= 10) return { v: 'ילד (עד 10)',   l: `גיל ${n} — ילד` };
+  if (n <= 14) return { v: 'נער (10–14)',    l: `גיל ${n} — נער` };
+  if (n <= 70) return { v: 'בוגר (15–70)',   l: `גיל ${n} — בוגר` };
+  return           { v: 'מבוגר (70+)',       l: `גיל ${n} — מבוגר` };
+}
+
+function mapWeight(n, gender) {
+  if (gender === 'גבר') {
+    if (n < 76)  return { v: 'קל',     l: `${n} ק"ג — קל (גבר)` };
+    if (n <= 95) return { v: 'בינוני', l: `${n} ק"ג — בינוני (גבר)` };
+    return              { v: 'כבד',    l: `${n} ק"ג — כבד (גבר)` };
+  } else {
+    if (n < 60)  return { v: 'קל',     l: `${n} ק"ג — קל (אישה)` };
+    if (n <= 75) return { v: 'בינוני', l: `${n} ק"ג — בינוני (אישה)` };
+    return              { v: 'כבד',    l: `${n} ק"ג — כבד (אישה)` };
+  }
+}
+
+function mapShoeSize(n, gender) {
+  if (n <= 34) return { v: 'ילד', l: gender === 'אישה' ? `מידה ${n} — ילדה` : `מידה ${n} — ילד` };
+  if (gender === 'אישה') {
+    if (n <= 37) return { v: 'נער', l: `מידה ${n} — נשים קטן` };
+    return              { v: 'בוגר', l: `מידה ${n} — נשים בוגרת` };
+  }
+  if (n <= 38) return { v: 'נער', l: `מידה ${n} — נוער` };
+  return              { v: 'בוגר', l: `מידה ${n} — בוגר` };
+}
+
+const STEPS = [
+  { questions: [
+    { key: 'gender',  title: 'מין המטופל',   subtitle: 'בחר מין',           multi: false, options: ['גבר', 'אישה'] },
+    { key: 'disease', title: 'מחלות רקע',    subtitle: 'בחר מחלות רקע',     multi: false, options: ['סכרת', 'אין'] }
+  ]},
+  { questions: [
+    { key: 'pathologies', title: 'פתלוגיות', subtitle: 'בחר פתלוגיות רלוונטיות (ניתן לבחור מספר)', multi: true,
+      options: ['pes cavus','pes planus','heel valgus','heel varus','heel spurs','plantar fasciitis','metatarsalgia','calluses','neuropathy','hammertoes','hallux valgus'] }
+  ]},
+  { questions: [
+    { key: 'pain',        title: 'כאבים',             subtitle: 'בחר אזורי כאב (ניתן לבחור מספר)', multi: true,  options: ['כפות רגליים','קרסוליים','שוקיים','ברכיים','אגן','גב'] },
+    { key: 'sensitivity', title: 'רגישות כף הרגל',   subtitle: 'בחר רמת רגישות',                  multi: false, options: ['גבוהה','רגיל','נמוך'] }
+  ]},
+  { questions: [
+    { key: 'shoe_type', title: 'סוג נעליים', subtitle: 'בחר סוג נעליים עיקרי', multi: false, options: ['ספורט','סניקרס','הליכה','מגפונים','אלגנט','נעליי עבודה'] },
+    { key: 'volume',    title: 'נפח נעליים', subtitle: 'בחר נפח הנעל',          multi: false, options: ['רחב','רגיל','צר'] }
+  ]},
+  { questions: [
+    { key: 'age',       title: 'גיל',          subtitle: 'הכנס גיל בשנים',  numericInput: true, unit: 'שנים', min: 1,  max: 120, placeholder: 'לדוגמה: 35' },
+    { key: 'weight',    title: 'משקל',          subtitle: 'הכנס משקל בק"ג',  numericInput: true, unit: 'ק"ג',  min: 5,  max: 300, placeholder: 'לדוגמה: 70' },
+    { key: 'shoe_size', title: 'מידת נעליים',  subtitle: 'הכנס מידת נעל',   numericInput: true, unit: 'מידה', min: 15, max: 55,  placeholder: 'לדוגמה: 42' }
+  ]},
+  { questions: [
+    { key: 'sport', title: 'סוג ספורט', subtitle: 'בחר פעילות ספורטיבית (ניתן לבחור מספר)', multi: true, hasOther: true,
+      options: ['כדורגל','כדורסל','ריצה','טניס','כדור עף','כדור יד','אימון כוח','הליכה','לא פעיל ספורטיבית'] }
+  ]},
+  { questions: [
+    { key: 'extra_shoe_type', title: 'זוג נעליים נוספים', subtitle: 'האם יש זוג נוסף? בחר סוג לקבלת המלצה על מדרס שני', multi: false,
+      options: ['ספורט','סניקרס','הליכה','מגפונים','אלגנט','נעליי עבודה','אין זוג נוסף'] }
+  ]}
+];
+
+// Decision matrix — weight values are normalized: קל / בינוני / כבד
+// shoe_size values are normalized: ילד / נער / בוגר
+const INSOLES = [
+  {
+    name: 'מודפס BIO',
+    priority: 1,
+    criteria: {
+      pathologies: ['pes cavus','pes planus','heel valgus','heel varus','heel spurs','plantar fasciitis','metatarsalgia','neuropathy','hammertoes','hallux valgus'],
+      pain:        ['כפות רגליים','קרסוליים','שוקיים','ברכיים','אגן'],
+      shoe_type:   ['ספורט','סניקרס','הליכה','נעליי עבודה'],
+      volume:      ['רגיל'],
+      sensitivity: ['רגיל'],
+      age:         ['נער (10–14)','בוגר (15–70)','מבוגר (70+)'],
+      weight:      ['קל','בינוני'],
+      shoe_size:   ['נער','בוגר'],
+      sport:       ['כדורסל','ריצה','טניס','כדור עף','כדור יד','אימון כוח','הליכה','כדורגל'],
+      disease:     ['סכרת','אין']
+    }
+  },
+  {
+    name: 'מודפס קלאסי',
+    priority: 2,
+    criteria: {
+      pathologies: ['pes cavus','pes planus','heel valgus','heel varus','heel spurs','plantar fasciitis','metatarsalgia','neuropathy','hammertoes','hallux valgus'],
+      pain:        ['כפות רגליים','קרסוליים','שוקיים','ברכיים','אגן'],
+      shoe_type:   ['ספורט','סניקרס','הליכה','נעליי עבודה'],
+      volume:      ['רגיל'],
+      sensitivity: ['רגיל','גבוהה'],
+      age:         ['נער (10–14)','בוגר (15–70)','מבוגר (70+)'],
+      weight:      ['קל','בינוני'],
+      shoe_size:   ['נער','בוגר'],
+      sport:       ['הליכה'],
+      disease:     ['סכרת']
+    }
+  },
+  {
+    name: 'איירלייט חצי קשיח',
+    priority: 3,
+    criteria: {
+      pathologies: ['pes cavus','pes planus','heel valgus','heel varus','heel spurs','plantar fasciitis','metatarsalgia','hammertoes','hallux valgus'],
+      pain:        ['כפות רגליים','קרסוליים','שוקיים','ברכיים','אגן'],
+      shoe_type:   ['ספורט','הליכה','נעליי עבודה'],
+      volume:      ['רחב'],
+      sensitivity: ['רגיל'],
+      age:         ['נער (10–14)','בוגר (15–70)','מבוגר (70+)'],
+      weight:      ['בינוני'],
+      shoe_size:   ['בוגר'],
+      sport:       ['הליכה'],
+      disease:     ['סכרת']
+    }
+  },
+  {
+    name: 'איירלייט ספורט',
+    priority: 4,
+    criteria: {
+      pathologies: ['pes cavus','pes planus','heel spurs','plantar fasciitis'],
+      pain:        ['כפות רגליים','שוקיים','ברכיים'],
+      shoe_type:   ['ספורט','הליכה','נעליי עבודה'],
+      volume:      ['רחב'],
+      sensitivity: ['גבוהה','רגיל'],
+      age:         ['נער (10–14)','בוגר (15–70)','מבוגר (70+)'],
+      weight:      ['קל','בינוני'],
+      shoe_size:   ['נער','בוגר'],
+      sport:       ['כדורסל','ריצה','טניס','כדור עף','כדור יד','הליכה'],
+      disease:     ['סכרת','אין']
+    }
+  },
+  {
+    name: 'מודפס לייט',
+    priority: 5,
+    criteria: {
+      pathologies: ['pes cavus','pes planus'],
+      pain:        ['קרסוליים','שוקיים','ברכיים','אגן'],
+      shoe_type:   ['ספורט','סניקרס','הליכה','נעליי עבודה'],
+      volume:      ['רגיל','צר'],
+      sensitivity: ['רגיל'],
+      age:         ['ילד (עד 10)','נער (10–14)','בוגר (15–70)','מבוגר (70+)'],
+      weight:      ['קל','בינוני'],
+      shoe_size:   ['ילד','נער','בוגר'],
+      sport:       ['הליכה'],
+      disease:     ['אין']
+    }
+  },
+  {
+    name: 'גרפית',
+    priority: 6,
+    criteria: {
+      pathologies: ['heel valgus','heel varus'],
+      pain:        ['קרסוליים','ברכיים'],
+      shoe_type:   ['ספורט','הליכה','נעליי עבודה'],
+      volume:      ['רגיל'],
+      sensitivity: ['נמוך'],
+      age:         ['בוגר (15–70)','מבוגר (70+)'],
+      weight:      ['כבד'],
+      shoe_size:   ['בוגר'],
+      sport:       ['אימון כוח'],
+      disease:     ['אין']
+    }
+  },
+  {
+    name: 'מודפס לייט 3/4',
+    priority: 7,
+    criteria: {
+      pathologies: ['pes cavus','pes planus'],
+      pain:        ['כפות רגליים','קרסוליים','שוקיים','ברכיים'],
+      shoe_type:   ['מגפונים','אלגנט'],
+      volume:      ['צר'],
+      sensitivity: ['רגיל'],
+      age:         ['נער (10–14)','בוגר (15–70)','מבוגר (70+)'],
+      weight:      ['קל','בינוני'],
+      shoe_size:   ['נער','בוגר'],
+      sport:       ['כדורגל'],
+      disease:     ['אין']
+    }
+  },
+  {
+    name: 'איירלייט קשיח',
+    priority: 8,
+    criteria: {
+      pathologies: ['calluses'],
+      pain:        ['כפות רגליים'],
+      shoe_type:   ['הליכה','נעליי עבודה'],
+      volume:      ['רחב'],
+      sensitivity: ['רגיל'],
+      age:         ['בוגר (15–70)','מבוגר (70+)'],
+      weight:      ['כבד'],
+      shoe_size:   ['בוגר'],
+      sport:       ['אימון כוח'],
+      disease:     ['סכרת']
+    }
+  }
+];
+
+// Weights per criterion
+const WEIGHTS = {
+  pathologies: 10,
+  pain:         3,
+  shoe_type:    3,
+  volume:       2,
+  sensitivity:  2,
+  age:          2,
+  weight:       1,
+  shoe_size:    1,
+  sport:        2,
+  disease:      2
+};
+
+// Override / fast-path rules
+const OVERRIDE_RULES = [
+  { condition: (a) => a.shoe_type === 'מגפונים', insole: 'מודפס לייט 3/4', reason: 'נעל מגפונים → מדרס 3/4 בלבד מתאים' },
+  { condition: (a) => a.shoe_type === 'אלגנט',   insole: 'מודפס לייט 3/4', reason: 'נעל אלגנט → מדרס 3/4 בלבד מתאים' },
+  { condition: (a) => a.age && a.age.startsWith('ילד'), insole: 'מודפס לייט 3/4', reason: 'גיל ילד → מדרס 3/4 מומלץ' },
+  { condition: (a) => a.shoe_size && a.shoe_size.startsWith('ילד'), insole: 'מודפס לייט 3/4', reason: 'מידת נעל ילד → מדרס 3/4 מומלץ' },
+  { condition: (a) => a.sport && a.sport.includes('כדורגל'), insole: 'מודפס לייט 3/4', reason: 'כדורגל → מדרס 3/4 בלבד מתאים' },
+  { condition: (a) => a.pathologies && a.pathologies.includes('calluses'), insole: 'איירלייט קשיח', reason: 'calluses → איירלייט קשיח מומלץ' },
+];
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let currentStep = 0;
+let answers = {};
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+function init() {
+  // Build step dots
+  const dotsEl = document.getElementById('steps-dots');
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < STEPS.length; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'step-dot';
+    dot.textContent = i + 1;
+    dot.onclick = () => { if (i < currentStep) { currentStep = i; renderStep(); } };
+    dotsEl.appendChild(dot);
+  }
+  renderStep();
+}
+
+function getMapped(key, num) {
+  const gender = answers.gender || 'גבר';
+  if (key === 'age')       return mapAge(num);
+  if (key === 'weight')    return mapWeight(num, gender);
+  if (key === 'shoe_size') return mapShoeSize(num, gender);
+  return null;
+}
+
+function renderNumericItem(q) {
+  const cur = answers['_num_' + q.key] || '';
+  const mapped = cur !== '' ? getMapped(q.key, +cur) : null;
+  return `
+    <input type="number" id="num-input-${q.key}" class="num-field"
+      min="${q.min}" max="${q.max}" placeholder="${q.placeholder}" value="${cur}"
+      oninput="handleNumInput('${q.key}', this.value)"
+      onkeydown="if(event.key==='Enter') document.getElementById('btn-next').click()"
+    />
+    <span class="num-unit">${q.unit}</span>
+    <div class="num-category" id="num-category-${q.key}" style="margin-top:6px">
+      ${mapped ? `<span class="cat-badge">${mapped.l}</span>` : `<span class="cat-hint">הכנס מספר</span>`}
+    </div>`;
+}
+
+function renderStep() {
+  const step = STEPS[currentStep];
+  const card = document.getElementById('question-card');
+  const allNumeric = step.questions.every(q => q.numericInput);
+
+  let html = '';
+
+  if (allNumeric) {
+    // ── Inline horizontal layout for numeric questions ──
+    html += '<div class="num-inline-group">';
+    step.questions.forEach(q => {
+      const sub = answers.gender === 'אישה'
+        ? (q.subtitle || '').replace(/הכנס /g, 'הכנסי ') : (q.subtitle || '');
+      html += `<div class="num-inline-item">
+        <div class="q-section-title">${q.title}</div>
+        <input type="number" id="num-input-${q.key}" class="num-field"
+          min="${q.min}" max="${q.max}" placeholder="${q.placeholder}" value="${answers['_num_' + q.key] || ''}"
+          oninput="handleNumInput('${q.key}', this.value)"
+          onkeydown="if(event.key==='Enter') document.getElementById('btn-next').click()"
+        />
+        <span class="num-unit">${q.unit}</span>
+      </div>`;
+    });
+    html += '</div>';
+  } else {
+    step.questions.forEach((q, qi) => {
+      if (qi > 0) html += '<div class="q-divider"></div>';
+      const sub = answers.gender === 'אישה'
+        ? (q.subtitle || '').replace(/בחר /g, 'בחרי ').replace(/הכנס /g, 'הכנסי ')
+        : (q.subtitle || '');
+      html += `<div class="q-section">
+        <div class="q-section-title">${q.title}</div>
+        ${sub ? `<div class="q-section-subtitle">${sub}</div>` : ''}`;
+
+      if (q.numericInput) {
+        html += `<div class="num-input-wrap"><div class="num-row">${renderNumericItem(q)}</div></div>`;
+      } else {
+      const gid = `q-opts-${q.key}`;
+      html += `<div class="options-grid" id="${gid}">`;
+      (q.options || []).forEach(opt => {
+        const v = typeof opt === 'string' ? opt : opt.v;
+        const l = typeof opt === 'string' ? opt : opt.l;
+        const sel = q.multi ? (answers[q.key] || []).includes(v) : answers[q.key] === v;
+        const cls = `option-btn${q.multi ? '' : ' single'}${sel ? ' selected' : ''}`;
+        const safeV = v.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        const safeL = l.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        html += `<button class="${cls}" onclick="toggleOption(this,'${safeV}','${safeL}',${q.multi},'${q.key}','${gid}')">${l}</button>`;
+      });
+      if (q.hasOther) {
+        const ov = answers['_other_' + q.key] || '';
+        const osel = ov.trim() !== '';
+        html += `<button class="option-btn${osel ? ' selected' : ''}" id="other-btn-${q.key}" onclick="toggleOtherWrap('${q.key}')">${osel ? 'אחר: ' + ov : 'אחר...'}</button>
+          <div id="other-wrap-${q.key}" class="other-input-wrap" style="grid-column:1/-1;display:${osel ? 'flex' : 'none'}">
+            <input type="text" id="other-text-${q.key}" class="other-text-field" placeholder="כתוב סוג ספורט..." value="${ov}" oninput="handleOtherInput('${q.key}',this.value)"/>
+            <button class="other-clear-btn" onclick="clearOther('${q.key}')">✕</button>
+          </div>`;
+      }
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+  }
+
+  card.innerHTML = html;
+  setTimeout(() => { const f = card.querySelector('.num-field'); if (f) f.focus(); }, 50);
+
+  const pct = Math.round((currentStep / STEPS.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('step-label').textContent = `שלב ${currentStep + 1} מתוך ${STEPS.length}`;
+  document.getElementById('step-pct').textContent = pct + '%';
+  document.querySelectorAll('.step-dot').forEach((dot, i) => {
+    dot.className = 'step-dot';
+    if (i < currentStep) dot.classList.add('done');
+    else if (i === currentStep) dot.classList.add('active');
+  });
+  document.getElementById('btn-back').style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.textContent = currentStep === STEPS.length - 1 ? '✓ קבל המלצה' : 'הבא ←';
+  nextBtn.className = currentStep === STEPS.length - 1 ? 'btn btn-success' : 'btn btn-primary';
+}
+
+function handleNumInput(key, rawVal) {
+  const num = parseFloat(rawVal);
+  const catEl = document.getElementById('num-category-' + key);
+  if (!rawVal || isNaN(num)) {
+    delete answers[key]; delete answers['_num_' + key];
+    if (answers._labels) delete answers._labels[key];
+    if (catEl) catEl.innerHTML = '<span class="cat-hint">הכנס מספר לקבלת קטגוריה</span>';
+    return;
+  }
+  answers['_num_' + key] = num;
+  const mapped = getMapped(key, num);
+  if (mapped) {
+    answers[key] = mapped.v;
+    if (!answers._labels) answers._labels = {};
+    answers._labels[key] = (key === 'age' || key === 'shoe_size') ? String(num) : mapped.l;
+    if (catEl) catEl.innerHTML = `<span class="cat-badge">${mapped.l}</span>`;
+  }
+}
+
+function toggleOption(btn, val, label, multi, key, gid) {
+  if (!answers._labels) answers._labels = {};
+  if (multi) {
+    if (!answers[key]) answers[key] = [];
+    if (!answers._labels[key]) answers._labels[key] = [];
+    const idx = answers[key].indexOf(val);
+    if (idx >= 0) { answers[key].splice(idx,1); answers._labels[key].splice(idx,1); btn.classList.remove('selected'); }
+    else           { answers[key].push(val);     answers._labels[key].push(label);  btn.classList.add('selected');    }
+  } else {
+    answers[key] = val; answers._labels[key] = label;
+    document.querySelectorAll(`#${gid} .option-btn`).forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
+}
+
+function toggleOtherWrap(key) {
+  const wrap = document.getElementById('other-wrap-' + key);
+  if (!wrap) return;
+  const show = wrap.style.display === 'none';
+  wrap.style.display = show ? 'flex' : 'none';
+  if (show) { const t = document.getElementById('other-text-' + key); if (t) t.focus(); }
+}
+
+function handleOtherInput(key, val) {
+  answers['_other_' + key] = val;
+  const btn = document.getElementById('other-btn-' + key);
+  if (!btn) return;
+  if (val.trim()) { btn.textContent = `אחר: ${val}`; btn.classList.add('selected'); if (!answers._labels) answers._labels = {}; answers._labels['_other_' + key] = val; }
+  else            { btn.textContent = 'אחר...';       btn.classList.remove('selected'); if (answers._labels) delete answers._labels['_other_' + key]; }
+}
+
+function clearOther(key) {
+  answers['_other_' + key] = '';
+  if (answers._labels) delete answers._labels['_other_' + key];
+  const btn = document.getElementById('other-btn-' + key); if (btn) { btn.textContent = 'אחר...'; btn.classList.remove('selected'); }
+  const inp = document.getElementById('other-text-' + key); if (inp) inp.value = '';
+  const wrap = document.getElementById('other-wrap-' + key); if (wrap) wrap.style.display = 'none';
+}
+
+function goNext() {
+  if (currentStep < STEPS.length - 1) { currentStep++; renderStep(); }
+  else showResults();
+}
+
+function goBack() {
+  if (currentStep > 0) { currentStep--; renderStep(); }
+}
+
+function skipStep() {
+  STEPS[currentStep].questions.forEach(q => {
+    delete answers[q.key]; delete answers['_num_' + q.key]; delete answers['_other_' + q.key];
+    if (answers._labels) delete answers._labels[q.key];
+  });
+  goNext();
+}
+
+function restart() {
+  currentStep = 0;
+  answers = {};
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('form-section').style.display = 'block';
+  document.querySelector('.progress-wrap').style.display = 'block';
+  init();
+}
+
+// ─────────────────────────────────────────────
+// SCORING
+// ─────────────────────────────────────────────
+function scoreInsole(insole) {
+  let score = 0;
+  let maxScore = 0;
+  const reasons = [];
+
+  Object.keys(WEIGHTS).forEach(key => {
+    const userVals = Array.isArray(answers[key])
+      ? answers[key]
+      : (answers[key] ? [answers[key]] : []);
+
+    if (userVals.length === 0) return; // skipped
+
+    const supported = insole.criteria[key] || [];
+    const matches = userVals.filter(v => supported.includes(v));
+    const w = WEIGHTS[key];
+
+    maxScore += w;
+    if (matches.length > 0) {
+      score += w * (matches.length / userVals.length);
+      const keyLabel = {
+        pathologies:'פתלוגיות', pain:'כאבים', shoe_type:'סוג נעל',
+        volume:'נפח', sensitivity:'רגישות', age:'גיל', weight:'משקל',
+        shoe_size:'מידה', sport:'ספורט', disease:'מחלות'
+      }[key];
+      reasons.push(`${keyLabel}: ${matches.join(', ')}`);
+    }
+  });
+
+  return { score, maxScore, pct: maxScore > 0 ? (score / maxScore) * 100 : 0, reasons };
+}
+
+function buildQroomExplanation(a) {
+  return '<span class="exp-line">טיפול בטכנולוגיית אלקטרותרפיה (גירוי חשמלי) שמראה הקלה בכאבים כבר מהטיפול הראשון</span>';
+}
+
+function buildExplanation(insoleName, a) {
+  const parts = [];
+
+  // Pathologies
+  const path = a.pathologies || [];
+  if (path.length) parts.push(`מתאים לפתלוגיות: ${path.join(', ')}.`);
+
+  // Pain
+  const pain = a.pain || [];
+  if (pain.length) parts.push(`מטפל בכאבים ב${pain.join(' ו')}.`);
+
+  // Shoe type
+  if (a.shoe_type) parts.push(`מתאים לנעל ${a.shoe_type}${a.volume ? ` (נפח ${a.volume})` : ''}.`);
+
+  // Sport
+  const sport = a.sport || [];
+  const otherSport = a._other_sport;
+  const allSports = otherSport ? [...sport, otherSport] : sport;
+  if (allSports.length) parts.push(`מתאים לפעילות: ${allSports.join(', ')}.`);
+
+  // Disease
+  const disease = a.disease || [];
+  if (disease.includes('סכרת')) parts.push('מתחשב בסכרת — חשוב להדגיש בפני הלקוח.');
+
+  // Age / weight context
+  if (a.age) {
+    const ageMap = { 'ילד (עד 10)':'ילדים', 'נער (10–14)':'נוער', 'בוגר (15–70)':'בוגרים', 'מבוגר (70+)':'מבוגרים' };
+    parts.push(`מומלץ לגיל ${ageMap[a.age] || a.age}.`);
+  }
+
+  // Sensitivity
+  if (a.sensitivity === 'גבוהה') parts.push('רגישות גבוהה — יש להסביר ללקוח על חומר הריפוד.');
+
+  // Insole-specific sales tips
+  const tips = {
+    'מודפס BIO':          'המדרס הגמיש ביותר — מכסה את הרוב המוחלט של הפתלוגיות, בחירה בטוחה לכל מטופל.',
+    'מודפס קלאסי':        'מדרס אוניברסלי מעולה — מתאים למגוון רחב של פתלוגיות ונעליים יומיומיות.',
+    'איירלייט חצי קשיח':  'מדרס קשיח למחצה — מספק תמיכה גבוהה, אידיאלי ללקוחות עם pes planus או heel conditions.',
+    'איירלייט ספורט':     'מדרס ספורט מוקשח — מעולה לרצים ולספורטאים שצריכים תמיכה יציבה בזמן אימון.',
+    'מודפס לייט':         'מדרס קל ודק — מתאים לנעליים עם מקום מוגבל, נוח לנשיאה יומיומית.',
+    'מודפס לייט 3/4':     'מדרס 3/4 — מיועד לנעל עם מקום מצומצם (מגפונים/אלגנט/ילדים), חצי מדרס בלבד.',
+    'גרפית':              'מדרס גרפי פשוט — מתאים ללקוחות עם heel valgus/varus וצריכת ייצוב בלבד.',
+    'איירלייט קשיח':      'מדרס קשיח במלואו — מיועד ל-calluses ולעומס גבוה, לא מתאים לרגישות גבוהה.'
+  };
+  const tip = tips[insoleName];
+  if (tip) parts.push(`💡 ${tip}`);
+
+  return parts.map(p => `<span class="exp-line">${p}</span>`).join('');
+}
+
+function showResults() {
+  document.getElementById('form-section').style.display = 'none';
+  document.querySelector('.progress-wrap').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+
+  const triggeredOverrides = OVERRIDE_RULES.filter(r => r.condition(answers));
+  const overridesEl = document.getElementById('override-alerts');
+  overridesEl.innerHTML = '';
+  const recEl = document.getElementById('rec-list');
+  recEl.innerHTML = '';
+
+  // ── 1. Main insole ──
+  let firstInsoleName = '';
+  let mainCard = '';
+
+  if (triggeredOverrides.length > 0) {
+    const uniqueOverrides = [...new Map(triggeredOverrides.map(o => [o.insole, o])).values()];
+    firstInsoleName = uniqueOverrides[0].insole;
+    const reasons = uniqueOverrides.map(o => o.reason).join(' | ');
+    overridesEl.innerHTML = `
+      <div class="override-alert">
+        <div class="icon">⚡</div>
+        <div class="text"><strong>כלל מחייב — </strong>${reasons}</div>
+      </div>`;
+    mainCard = `
+      <div class="recommendation-card rank-1">
+        <div class="rec-cat">מדרס ראשי</div>
+        <div class="rec-name">${firstInsoleName}</div>
+        <span class="rec-badge badge-gold">מדרס מחויב</span>
+      </div>`;
+  } else {
+    let scored = INSOLES.map(ins => ({ ...ins, ...scoreInsole(ins) }));
+    scored.sort((a, b) => b.pct - a.pct || a.priority - b.priority);
+    const top1 = scored[0];
+    firstInsoleName = top1.name;
+    mainCard = `
+      <div class="recommendation-card rank-1">
+        <div class="rec-cat">מדרס ראשי</div>
+        <div class="rec-name">${top1.name}</div>
+        <span class="rec-badge badge-gold">המלצה ראשונה</span>
+      </div>`;
+  }
+
+  // ── 2. Extra shoe ──
+  let extraCard = '';
+  if (answers.extra_shoe_type && answers.extra_shoe_type !== 'אין זוג נוסף') {
+    const extraType = answers.extra_shoe_type;
+    const extraOverride =
+      extraType === 'מגפונים' ? 'מודפס לייט 3/4' :
+      extraType === 'אלגנט'   ? 'מודפס לייט 3/4' : null;
+
+    const EXTRA_WEIGHTS = { pathologies:10, pain:3, shoe_type:10, volume:5, sensitivity:2, age:2, weight:1, shoe_size:1, sport:2, disease:2 };
+    const fakeAnswers = { ...answers, shoe_type: extraType };
+    let extraScored = INSOLES.map(ins => {
+      let score = 0, maxScore = 0;
+      Object.keys(EXTRA_WEIGHTS).forEach(key => {
+        const userVals = Array.isArray(fakeAnswers[key]) ? fakeAnswers[key] : (fakeAnswers[key] ? [fakeAnswers[key]] : []);
+        if (!userVals.length) return;
+        const supported = ins.criteria[key] || [];
+        const matches = userVals.filter(v => supported.includes(v));
+        maxScore += EXTRA_WEIGHTS[key];
+        if (matches.length) score += EXTRA_WEIGHTS[key] * (matches.length / userVals.length);
+      });
+      return { ...ins, pct: maxScore > 0 ? (score / maxScore) * 100 : 0 };
+    });
+    extraScored.sort((a, b) => b.pct - a.pct || a.priority - b.priority);
+
+    let extraInsole;
+    if (extraOverride && extraOverride !== firstInsoleName) {
+      extraInsole = extraOverride;
+    } else {
+      const candidate = extraScored.find(ins => ins.name !== firstInsoleName);
+      extraInsole = candidate ? candidate.name : extraScored[0].name;
+    }
+    extraCard = `
+      <div class="recommendation-card rank-2">
+        <div class="rec-cat">מדרס — ${extraType}</div>
+        <div class="rec-name">${extraInsole}</div>
+        <span class="rec-badge badge-silver">נעל שנייה</span>
+      </div>`;
+  }
+
+  // ── 3. Qroom ──
+  const qroomCard = `
+    <div class="recommendation-card qroom-card">
+      <div class="rec-cat">טיפול משלים</div>
+      <div class="rec-name qroom-name">Qroom</div>
+      <div class="exp-line" style="margin-top:8px">${buildQroomExplanation(answers)}</div>
+    </div>`;
+
+  // ── Build grid ──
+  const cols = extraCard ? 'rec-grid-3' : 'rec-grid-2';
+  recEl.innerHTML = `<div class="${cols}">${mainCard}${extraCard}${qroomCard}</div>`;
+
+  // ── Summary — two columns ──
+  const labels = {
+    gender:'מין', disease:'מחלות רקע', pathologies:'פתלוגיות', pain:'כאבים',
+    shoe_type:'סוג נעל', volume:'נפח נעל', sensitivity:'רגישות', age:'גיל',
+    weight:'משקל', shoe_size:'מידת נעל', sport:'ספורט',
+    extra_shoe_type:'נעליים נוספות'
+  };
+  const lmap = answers._labels || {};
+  const allKeys = Object.keys(labels);
+  const half = Math.ceil(allKeys.length / 2);
+  const buildRows = keys => keys.map(key => {
+    let parts = Array.isArray(lmap[key]) ? [...lmap[key]] : (lmap[key] || answers[key] ? [lmap[key] || answers[key]] : []);
+    if (key === 'sport' && answers['_other_sport'] && answers['_other_sport'].trim()) parts.push(answers['_other_sport'].trim());
+    return `<tr><th>${labels[key]}</th><td>${parts.length ? parts.join(', ') : '—'}</td></tr>`;
+  }).join('');
+
+  document.getElementById('summary-table').innerHTML = `
+    <tr><th>קטגוריה</th><th>ערך</th></tr>${buildRows(allKeys)}`;
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+init();
+</script>
+</body>
+</html>
